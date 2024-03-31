@@ -1,30 +1,23 @@
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
+const express = require("express");
+const cors = require("cors");
 const app = express();
+
 const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors());
 app.use(express.json());
 
-// Define the upload directory and file storage settings for Multer
-// const uploadDir = path.join(__dirname, "uploads");
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/images'); // Directory to store uploaded images
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); // Unique filename
-  },
-});
 
-const upload = multer({ storage: storage });
 
-// MongoDB setup
-const uri = "mongodb+srv://ForexHero:M8bg8F28DFPCXYV5@cluster0.ezxu64p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; // Replace with your MongoDB URI
+//ForexHero
+//M8bg8F28DFPCXYV5
+
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const uri = "mongodb+srv://ForexHero:M8bg8F28DFPCXYV5@cluster0.ezxu64p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -112,31 +105,10 @@ async function run() {
     })
 
     // posts API
-    // Endpoint to handle post creation with image upload
-    app.post("/posts", upload.single("image"), async (req, res) => {
-      try {
-        const { title, content } = req.body;
-        const imageUrl = req.file.path; // Path of the uploaded image
-        
-        const post = { title, content, imageUrl }; // Include image URL in the post object
-
-        const result = await postCollection.insertOne(post);
-        res.send({ success: true, postId: result.insertedId });
-      } catch (error) {
-        console.error("Error adding post:", error);
-        res.status(500).send({ success: false, error: "Internal server error" });
-      }
-    });
-
-    app.get("/posts", async (req, res) => {
-      try {
-        const result = await postCollection.find().toArray();
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        res.status(500).send({ success: false, error: "Internal server error" });
-      }
-    });
+    app.get('/posts', async (req, res) => {
+      const result = await postCollection.find().toArray()
+      res.send(result)
+    })
 
     app.get('/posts/:id', async (req, res) => {
       const id = req.params.id;
@@ -145,8 +117,27 @@ async function run() {
       res.send(result)
     })
 
-    
+    app.post('/posts', async (req, res) => {
+      const post = req.body;
+      const result = await postCollection.insertOne(post)
+      res.send(result)
+    })
 
+    // app.put('/posts/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updateposts = req.body;
+    //   const booking = {
+    //     $set: {
+    //       product_image: updateposts.product_image,
+    //       product_name: updateposts.product_name,
+    //       description: updateposts.description,
+    //     }
+    //   }
+    //   const result = await postCollection.updateOne(filter, booking, options);
+    //   res.send(result);
+    // })
     app.delete('/posts/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }

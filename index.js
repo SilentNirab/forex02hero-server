@@ -34,6 +34,35 @@ async function run() {
     const userCollection = client.db("Forex02Hero").collection("users")
     const postCollection = client.db("Forex02Hero").collection("posts")
     const newsCollection = client.db("Forex02Hero").collection("news")
+    const analysisCollection = client.db("Forex02Hero").collection("analysis")
+
+        // analysis API
+        app.get('/analysis', async (req, res) => {
+          const result = await analysisCollection.find().toArray()
+          res.send(result)
+        })
+    
+        app.get('/analysis/:post_category', async (req, res) => {
+          const post_category = req.params.post_category;
+          const query = {post_category: post_category }; // Assuming 'category' is a field in your documents
+          const result = await analysisCollection.find(query).toArray(); // Assuming analysisCollection is your MongoDB collection
+          res.send(result);
+        });
+        
+    
+        app.post('/analysis', async (req, res) => {
+          const post = req.body;
+          const result = await analysisCollection.insertOne(post)
+          res.send(result)
+        })
+    
+     
+        app.delete('/analysis/:id', async (req, res) => {
+          const id = req.params.id;
+          const query = { _id: new ObjectId(id) }
+          const result = await analysisCollection.deleteOne(query);
+          res.send(result);
+        })
 
     // user API
     app.get('/users', async (req, res) => {
